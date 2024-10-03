@@ -11,7 +11,6 @@ import org.example.devsync1.services.UserService;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 
 @WebServlet(name = "UserServlet", urlPatterns = {"/users"})
 public class UserServlet extends HttpServlet {
@@ -43,7 +42,7 @@ public class UserServlet extends HttpServlet {
             }
             res.sendRedirect("users");
         } catch (Exception e) {
-            e.printStackTrace(); // Log the error
+            e.printStackTrace(); // Consider using a logging framework
             res.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred: " + e.getMessage());
         }
     }
@@ -55,11 +54,9 @@ public class UserServlet extends HttpServlet {
         String email = req.getParameter("email");
         String password = req.getParameter("password");
         String roleStr = req.getParameter("role");
-
         Role role = Role.valueOf(roleStr.toUpperCase());
         User user = new User(username, firstName, lastName, email, password, role);
         userService.save(user);
-
     }
 
     private void updateUser(HttpServletRequest req) {
@@ -78,9 +75,17 @@ public class UserServlet extends HttpServlet {
 
     private void deleteUser(HttpServletRequest req) {
         Long userId = Long.valueOf(req.getParameter("id"));
-        Optional<User> user = userService.findById(userId);
-        user.ifPresent(userService::delete);
+        User user = userService.findById(userId);
+
+        // Check if the user exists
+        if (user != null) {
+            // Call delete method on userService
+            userService.delete(user); // Assuming delete method expects a User object
+        } else {
+            System.out.println("User not found for deletion: " + userId);
+        }
     }
+
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
@@ -90,8 +95,8 @@ public class UserServlet extends HttpServlet {
                 req.getRequestDispatcher("/createUser.jsp").forward(req, res);
             } else if ("edit".equals(action)) {
                 Long userId = Long.valueOf(req.getParameter("id"));
-                Optional<User> user = userService.findById(userId);
-                req.setAttribute("user", user.orElse(null));
+                User user = userService.findById(userId);
+                req.setAttribute("user", user);
                 req.getRequestDispatcher("/editUser.jsp").forward(req, res);
             } else {
                 List<User> users = userService.findAll();
@@ -99,9 +104,9 @@ public class UserServlet extends HttpServlet {
                 req.getRequestDispatcher("/users.jsp").forward(req, res);
             }
         } catch (Exception e) {
-            e.printStackTrace(); // Log the error
+            e.printStackTrace(); // Consider using a logging framework
             res.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred: " + e.getMessage());
         }
     }
-
 }
+

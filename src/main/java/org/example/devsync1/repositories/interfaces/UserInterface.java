@@ -8,7 +8,7 @@ import java.util.Optional;
 public interface UserInterface {
     void save(User user);
 
-    Optional<User> findById(Long id);
+    User findById(Long id);
 
     List<User> findAll();
 
