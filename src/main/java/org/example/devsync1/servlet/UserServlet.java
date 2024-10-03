@@ -92,9 +92,9 @@ public class UserServlet extends HttpServlet {
                 Long userId = Long.valueOf(req.getParameter("id"));
                 User user = userService.findById(userId);
                 req.setAttribute("user", user);
-                req.getRequestDispatcher("/editUser.jsp ").forward(req, res);
+                req.getRequestDispatcher("/editUser.jsp").forward(req, res);
 
-            }  else if ("delete".equals(action)) {  // Handling the delete action via GET
+            } else if ("delete".equals(action)) {  // Handling the delete action via GET
                 deleteUser(req, res);
             }else {
                 List<User> users = userService.findAll();

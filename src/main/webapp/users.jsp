@@ -1,23 +1,39 @@
 <%@ page import="org.example.devsync1.entities.User" %>
 <%@ page import="java.util.List" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<html>
+<html lang="en">
 <head>
     <title>Users</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Additional styles for table responsiveness */
+        @media (max-width: 640px) {
+            .table-responsive {
+                overflow-x: auto;
+            }
+        }
+    </style>
 </head>
-<body>
-<div class="text-gray-900 bg-gray-200">
-    <div class="p-4 flex">
-        <h1 class="text-3xl">Users</h1>
+<body class="bg-gray-100 text-gray-900 min-h-screen flex flex-col">
+
+<!-- Navbar -->
+<nav class="bg-blue-600 p-4 shadow-lg">
+    <div class="container mx-auto flex justify-between items-center">
+        <h1 class="text-white text-3xl font-bold">User Management System</h1>
     </div>
-    <div class="flex items-center mt-4 gap-x-3">
+</nav>
+
+<!-- Main content -->
+<div class="container mx-auto mt-8 flex-grow p-6 bg-white rounded-lg shadow-lg">
+    <div class="flex justify-between items-center mb-4">
+        <h1 class="text-3xl font-bold">Users</h1>
         <a href="users?action=create" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5">Add User</a>
     </div>
-    <div class="px-3 py-4 flex justify-center">
-        <table class="w-full text-md bg-white shadow-md rounded mb-4">
+
+    <div class="table-responsive">
+        <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
             <thead>
-            <tr class="border-b">
+            <tr class="border-b bg-gray-200">
                 <th class="text-left p-3 px-5">ID</th>
                 <th class="text-left p-3 px-5">User Name</th>
                 <th class="text-left p-3 px-5">First Name</th>
@@ -33,16 +49,16 @@
                 if (users != null && !users.isEmpty()) {
                     for (User user : users) {
             %>
-            <tr class="border-b hover:bg-orange-100">
+            <tr class="border-b hover:bg-orange-100 transition-colors duration-200">
                 <td class="p-3 px-5"><%= user.getId() != null ? user.getId() : "N/A" %></td>
                 <td class="p-3 px-5"><%= user.getUsername() != null ? user.getUsername() : "N/A" %></td>
                 <td class="p-3 px-5"><%= user.getFirstName() != null ? user.getFirstName() : "N/A" %></td>
                 <td class="p-3 px-5"><%= user.getLastName() != null ? user.getLastName() : "N/A" %></td>
                 <td class="p-3 px-5"><%= user.getEmail() != null ? user.getEmail() : "N/A" %></td>
                 <td class="p-3 px-5"><%= user.getRole() != null ? user.getRole() : "N/A" %></td>
-                <td class="p-3 px-5 flex ">
-                    <a href="users?action=edit&id=<%= user.getId() %>" class="px-4 py-2 bg-green-500 border rounded-lg text-sm font-medium text-gray-600 transition-colors duration-200 hover:bg-gray-100">edit</a>
-                    <a href="users?action=delete&id=<%= user.getId() %>" class="px-4 py-2 bg-red-500 border rounded-lg text-sm font-medium text-gray-600 transition-colors duration-200 hover:bg-gray-100">delete</a>
+                <td class="p-3 px-5 flex space-x-2">
+                    <a href="users?action=edit&id=<%= user.getId() %>" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition duration-200">Edit</a>
+                    <a href="users?action=delete&id=<%= user.getId() %>" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition duration-200">Delete</a>
                 </td>
             </tr>
             <%
@@ -59,5 +75,13 @@
         </table>
     </div>
 </div>
+
+<!-- Footer -->
+<footer class="bg-gray-800 p-4 mt-auto">
+    <div class="container mx-auto text-center text-white">
+        <p>&copy; 2024 User Management System. All rights reserved.</p>
+    </div>
+</footer>
+
 </body>
 </html>
