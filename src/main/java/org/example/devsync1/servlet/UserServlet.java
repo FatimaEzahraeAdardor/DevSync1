@@ -34,7 +34,7 @@ public class UserServlet extends HttpServlet {
                     updateUser(req);
                     break;
                 case "delete":
-                    deleteUser(req);
+                    deleteUser(req,res);
                     break;
                 default:
                     res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid action specified.");
@@ -73,17 +73,12 @@ public class UserServlet extends HttpServlet {
         userService.update(user);
     }
 
-    private void deleteUser(HttpServletRequest req) {
+    private void deleteUser(HttpServletRequest req , HttpServletResponse res) throws IOException {
         Long userId = Long.valueOf(req.getParameter("id"));
         User user = userService.findById(userId);
+        userService.delete(user);
+        res.sendRedirect(req.getContextPath() + "/users");  // Assuming /users shows the user list
 
-        // Check if the user exists
-        if (user != null) {
-            // Call delete method on userService
-            userService.delete(user); // Assuming delete method expects a User object
-        } else {
-            System.out.println("User not found for deletion: " + userId);
-        }
     }
 
 
@@ -97,8 +92,11 @@ public class UserServlet extends HttpServlet {
                 Long userId = Long.valueOf(req.getParameter("id"));
                 User user = userService.findById(userId);
                 req.setAttribute("user", user);
-                req.getRequestDispatcher("/editUser.jsp").forward(req, res);
-            } else {
+                req.getRequestDispatcher("/editUser.jsp ").forward(req, res);
+
+            }  else if ("delete".equals(action)) {  // Handling the delete action via GET
+                deleteUser(req, res);
+            }else {
                 List<User> users = userService.findAll();
                 req.setAttribute("users", users);
                 req.getRequestDispatcher("/users.jsp").forward(req, res);

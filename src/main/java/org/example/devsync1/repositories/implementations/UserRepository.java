@@ -34,12 +34,11 @@ public class UserRepository implements UserInterface {
     @Override
     public User findById(Long id) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
-
         try {
-            return entityManager.find(User.class, id); // Return null if not found
+            return entityManager.find(User.class, id);
         } catch (Exception e) {
-            e.printStackTrace();
-            return null; // Return null in case of an error
+            System.out.println(e.getMessage());
+            return null;
         }
     }
 
@@ -49,7 +48,7 @@ public class UserRepository implements UserInterface {
         try {
             return entityManager.createQuery("SELECT u FROM User u", User.class).getResultList();
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
             return null;
         }
     }
@@ -64,29 +63,28 @@ public class UserRepository implements UserInterface {
             entityManager.getTransaction().commit();
         } catch (Exception e) {
             entityManager.getTransaction().rollback();
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
     }
 
     @Override
     public void delete(User user) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
-
         try {
-            if (user != null) {
-                // Find the user first to ensure it's managed
-                User managedUser = entityManager.find(User.class, user.getId());
-                if (managedUser != null) {
-                    entityManager.getTransaction().begin();
-                    entityManager.remove(managedUser);
-                    entityManager.getTransaction().commit();
-                } else {
-                    System.out.println("User not found for deletion: " + user.getId());
-                }
+            entityManager.getTransaction().begin();
+            if (entityManager.contains(user)) {
+                entityManager.remove(user);
+            } else {
+                entityManager.remove(entityManager.merge(user));
             }
+            entityManager.getTransaction().commit();
         } catch (Exception e) {
-            entityManager.getTransaction().rollback();
-            e.printStackTrace();
+            if (entityManager.getTransaction().isActive()) {
+                entityManager.getTransaction().rollback();
+            }
+            System.out.println(e.getMessage());
+        } finally {
+            entityManager.close();
         }
     }
 
