@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.example.devsync1.entities.User;
 import org.example.devsync1.enums.Role;
 import org.example.devsync1.services.UserService;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.io.IOException;
 import java.util.List;
@@ -53,9 +54,11 @@ public class UserServlet extends HttpServlet {
         String lastName = req.getParameter("lastName");
         String email = req.getParameter("email");
         String password = req.getParameter("password");
+        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
+
         String roleStr = req.getParameter("role");
         Role role = Role.valueOf(roleStr.toUpperCase());
-        User user = new User(username, firstName, lastName, email, password, role);
+        User user = new User(username, firstName, lastName, email, hashedPassword, role);
         userService.save(user);
     }
 
@@ -67,18 +70,15 @@ public class UserServlet extends HttpServlet {
         String email = req.getParameter("email");
         String password = req.getParameter("password");
         Role role = Role.valueOf(req.getParameter("role").toUpperCase());
-
         User user = new User(username, firstName, lastName, email, password, role);
         user.setId(userId);
         userService.update(user);
     }
-
     private void deleteUser(HttpServletRequest req , HttpServletResponse res) throws IOException {
         Long userId = Long.valueOf(req.getParameter("id"));
         User user = userService.findById(userId);
         userService.delete(user);
-        res.sendRedirect(req.getContextPath() + "/users");  // Assuming /users shows the user list
-
+        res.sendRedirect(req.getContextPath() + "/users");
     }
 
 
@@ -94,7 +94,7 @@ public class UserServlet extends HttpServlet {
                 req.setAttribute("user", user);
                 req.getRequestDispatcher("/editUser.jsp").forward(req, res);
 
-            } else if ("delete".equals(action)) {  // Handling the delete action via GET
+            } else if ("delete".equals(action)) {
                 deleteUser(req, res);
             }else {
                 List<User> users = userService.findAll();
@@ -106,5 +106,6 @@ public class UserServlet extends HttpServlet {
             res.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred: " + e.getMessage());
         }
     }
+
 }
 
