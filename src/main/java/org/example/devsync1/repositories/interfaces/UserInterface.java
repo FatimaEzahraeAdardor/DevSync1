@@ -11,6 +11,7 @@ public interface UserInterface {
     User findById(Long id);
 
     List<User> findAll();
+    User findByEmail(String email);
 
     void update(User user);
 

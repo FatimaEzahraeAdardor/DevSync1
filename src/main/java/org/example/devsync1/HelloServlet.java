@@ -44,33 +44,6 @@ public class HelloServlet extends HttpServlet {
             message = "Error saving user: " + e.getMessage();
         }
 
-//        User user = new User();
-//        user.setUsername("user");
-//        user.setFirstName("John");
-//        user.setLastName("Doe");
-//        user.setEmail("john.doe@example.com");
-//        user.setPassword("password");
-//        user.setRole(Role.USER);
-//        user.setUsername("user");
-//        try{
-//            userRepository.save(user);
-//        }catch (Exception e){
-//            throw new ServletException(e);
-//        }
-//        try {
-//            // Fetch the existing user (e.g., with ID 1)
-//            User user = userRepository.findById(2L);
-//            if (user != null) {
-////                user.setUsername("admin"); // Update the username or any other field
-////                userRepository.update(user);
-//                userRepository.delete(user.getId());
-//                message = "User deleted successfully!";
-//            } else {
-//                message = "User not found!";
-//            }
-//        } catch (Exception e) {
-//            throw new ServletException(e);
-//        }
 
     }
 

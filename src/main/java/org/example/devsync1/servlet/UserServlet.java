@@ -37,6 +37,12 @@ public class UserServlet extends HttpServlet {
                 case "delete":
                     deleteUser(req,res);
                     break;
+                case "login":
+                    loginUser(req, res);  // Handle login here
+                    return;
+                case "logout":
+                    logoutUser(req, res);  // Handle login here
+                    return;
                 default:
                     res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid action specified.");
                     return;
@@ -69,8 +75,9 @@ public class UserServlet extends HttpServlet {
         String lastName = req.getParameter("lastName");
         String email = req.getParameter("email");
         String password = req.getParameter("password");
+        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
         Role role = Role.valueOf(req.getParameter("role").toUpperCase());
-        User user = new User(username, firstName, lastName, email, password, role);
+        User user = new User(username, firstName, lastName, email, hashedPassword, role);
         user.setId(userId);
         userService.update(user);
     }
@@ -80,6 +87,34 @@ public class UserServlet extends HttpServlet {
         userService.delete(user);
         res.sendRedirect(req.getContextPath() + "/users");
     }
+    private void loginUser(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
+        String email = req.getParameter("email");
+        String password = req.getParameter("password");
+        User user = userService.findByEmail(email);
+
+        if (user == null) {
+            req.setAttribute("error", "User not found with this email");
+            req.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(req, res);
+            return;
+        }
+        if (BCrypt.checkpw(password, user.getPassword())) {
+            req.getSession().setAttribute("loggedUser", user);
+
+            if (user.getRole() == Role.MANAGER) {
+                req.getSession().setAttribute("user", user);
+                res.sendRedirect(req.getContextPath() + "/users");
+            } else {
+                req.getRequestDispatcher("/WEB-INF/views/user/userInformation.jsp").forward(req, res);
+            }
+        } else {
+            req.setAttribute("error", "Password mismatch for user");
+            req.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(req, res);
+        }
+    }
+    private void logoutUser(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
+        req.getSession().removeAttribute("loggedUser");
+        req.getRequestDispatcher("index.jsp").forward(req, res);
+    }
 
 
     @Override
@@ -87,25 +122,30 @@ public class UserServlet extends HttpServlet {
         String action = req.getParameter("action");
         try {
             if ("create".equals(action)) {
-                req.getRequestDispatcher("/createUser.jsp").forward(req, res);
+                req.getRequestDispatcher("/WEB-INF/views/user/createUser.jsp").forward(req, res);
             } else if ("edit".equals(action)) {
                 Long userId = Long.valueOf(req.getParameter("id"));
                 User user = userService.findById(userId);
                 req.setAttribute("user", user);
-                req.getRequestDispatcher("/editUser.jsp").forward(req, res);
+                req.getRequestDispatcher("/WEB-INF/views/user/editUser.jsp").forward(req, res);
 
             } else if ("delete".equals(action)) {
                 deleteUser(req, res);
+            }else if ("login".equals(action)) {
+                req.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(req, res);
+            } else if ("logout".equals(action)) {
+                logoutUser(req, res);
             }else {
                 List<User> users = userService.findAll();
                 req.setAttribute("users", users);
-                req.getRequestDispatcher("/users.jsp").forward(req, res);
+                req.getRequestDispatcher("/WEB-INF/views/user/users.jsp").forward(req, res);
             }
         } catch (Exception e) {
-            e.printStackTrace(); // Consider using a logging framework
+            e.printStackTrace();
             res.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred: " + e.getMessage());
         }
     }
+
 
 }
 

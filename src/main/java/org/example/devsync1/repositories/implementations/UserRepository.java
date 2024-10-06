@@ -1,10 +1,7 @@
 package org.example.devsync1.repositories.implementations;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
+import jakarta.persistence.*;
 import org.example.devsync1.entities.User;
-import org.example.devsync1.enums.Role;
 import org.example.devsync1.repositories.interfaces.UserInterface;
 
 import java.util.List;
@@ -54,6 +51,22 @@ public class UserRepository implements UserInterface {
     }
 
     @Override
+    public User findByEmail(String email) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        User user = null;
+
+        try {
+            TypedQuery<User> query = entityManager.createQuery("SELECT u FROM User u WHERE u.email = :email", User.class);
+            query.setParameter("email", email);
+            user = query.getSingleResult();
+        }catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return user;
+    }
+
+
+    @Override
     public void update(User user) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
 
@@ -88,5 +101,10 @@ public class UserRepository implements UserInterface {
         }
     }
 
+    public static void main(String[] args) {
+        UserRepository userRepository = new UserRepository();
+        User user = userRepository.findByEmail("qixirohaxy@mailinator.com");
+        System.out.println(user);
+    }
 
 }

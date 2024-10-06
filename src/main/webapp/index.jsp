@@ -20,9 +20,7 @@
 <nav class="bg-blue-600 p-4 shadow-lg">
     <div class="container mx-auto flex justify-between items-center">
         <h1 class="text-white text-3xl font-bold">User Management System</h1>
-        <div>
-            <a href="users" class="text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-300">Manage Users</a>
-        </div>
+       
     </div>
 </nav>
 
@@ -39,10 +37,7 @@
         <p class="text-lg text-gray-600 mb-6">Please register or log in to manage your users.</p>
 
         <div class="flex justify-center space-x-6">
-            <a href="register.jsp" class="flex items-center justify-center text-white bg-blue-500 hover:bg-blue-600 transition duration-300 ease-in-out px-6 py-3 rounded-lg font-medium shadow-md hover:shadow-lg">
-                <i class="fas fa-user-plus mr-2"></i> Register
-            </a>
-            <a href="login.jsp" class="flex items-center justify-center text-white bg-gray-700 hover:bg-gray-800 transition duration-300 ease-in-out px-6 py-3 rounded-lg font-medium shadow-md hover:shadow-lg">
+            <a href="users?action=login" class="flex items-center justify-center text-white bg-gray-700 hover:bg-gray-800 transition duration-300 ease-in-out px-6 py-3 rounded-lg font-medium shadow-md hover:shadow-lg">
                 <i class="fas fa-sign-in-alt mr-2"></i> Login
             </a>
         </div>
