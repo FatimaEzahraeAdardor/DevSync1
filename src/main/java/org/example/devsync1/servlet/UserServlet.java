@@ -22,7 +22,6 @@ public class UserServlet extends HttpServlet {
     public void init() throws ServletException {
         userService = new UserService();
     }
-
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException {
         String action = req.getParameter("action");
@@ -34,14 +33,8 @@ public class UserServlet extends HttpServlet {
                 case "update":
                     updateUser(req);
                     break;
-                case "delete":
-                    deleteUser(req,res);
-                    break;
                 case "login":
-                    loginUser(req, res);  // Handle login here
-                    return;
-                case "logout":
-                    logoutUser(req, res);  // Handle login here
+                    loginUser(req, res);
                     return;
                 default:
                     res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid action specified.");
@@ -49,7 +42,7 @@ public class UserServlet extends HttpServlet {
             }
             res.sendRedirect("users");
         } catch (Exception e) {
-            e.printStackTrace(); // Consider using a logging framework
+            e.printStackTrace();
             res.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred: " + e.getMessage());
         }
     }
@@ -61,7 +54,6 @@ public class UserServlet extends HttpServlet {
         String email = req.getParameter("email");
         String password = req.getParameter("password");
         String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
-
         String roleStr = req.getParameter("role");
         Role role = Role.valueOf(roleStr.toUpperCase());
         User user = new User(username, firstName, lastName, email, hashedPassword, role);
@@ -70,15 +62,22 @@ public class UserServlet extends HttpServlet {
 
     private void updateUser(HttpServletRequest req) {
         Long userId = Long.valueOf(req.getParameter("id"));
+        User user = userService.findById(userId);
         String username = req.getParameter("username");
         String firstName = req.getParameter("firstName");
         String lastName = req.getParameter("lastName");
         String email = req.getParameter("email");
         String password = req.getParameter("password");
         String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
-        Role role = Role.valueOf(req.getParameter("role").toUpperCase());
-        User user = new User(username, firstName, lastName, email, hashedPassword, role);
+        String roleStr = req.getParameter("role");
+        Role role = Role.valueOf(roleStr.toUpperCase());
         user.setId(userId);
+        user.setUsername(username);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setEmail(email);
+        user.setPassword(hashedPassword);
+        user.setRole(role);
         userService.update(user);
     }
     private void deleteUser(HttpServletRequest req , HttpServletResponse res) throws IOException {
@@ -99,12 +98,10 @@ public class UserServlet extends HttpServlet {
         }
         if (BCrypt.checkpw(password, user.getPassword())) {
             req.getSession().setAttribute("loggedUser", user);
-
             if (user.getRole() == Role.MANAGER) {
-                req.getSession().setAttribute("user", user);
                 res.sendRedirect(req.getContextPath() + "/users");
             } else {
-                req.getRequestDispatcher("/WEB-INF/views/user/userInformation.jsp").forward(req, res);
+                res.sendRedirect(req.getContextPath() + "/tasks");
             }
         } else {
             req.setAttribute("error", "Password mismatch for user");
