@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @WebServlet(name = "TaskServlet", urlPatterns = {"/tasks"})
 public class TaskServlet extends HttpServlet {
@@ -140,7 +141,7 @@ public class TaskServlet extends HttpServlet {
                 return;
             }
 
-            User assignedTo = userService.findById(assignedToId);
+            Optional<User> assignedTo = userService.findById(assignedToId);
 
             List<Tag> tags = new ArrayList<>();
             if (tagIds != null) {
@@ -150,7 +151,7 @@ public class TaskServlet extends HttpServlet {
                 }
             }
 
-            Task task = new Task(title, description, creationDate, dueDate, status, tags, createdBy, assignedTo);
+            Task task = new Task(title, description, creationDate, dueDate, status, tags, createdBy, assignedTo.get());
             task.setTags(tags);
 
             taskService.save(task);
@@ -188,7 +189,7 @@ public class TaskServlet extends HttpServlet {
             LocalDate dueDate = LocalDate.parse(req.getParameter("dueDate"));
             String status = req.getParameter("status");
             Long assignedToId = Long.parseLong(req.getParameter("assignedTo"));
-            User assignedTo = userService.findById(assignedToId);
+            Optional<User> assignedTo = userService.findById(assignedToId);
             String[] tagIds = req.getParameterValues("tags[]");
 
             StringBuilder errors = new StringBuilder();
@@ -222,7 +223,7 @@ public class TaskServlet extends HttpServlet {
             task.setDescription(description);
             task.setDueDate(dueDate);
             task.setStatus(status);
-            task.setAssignedTo(assignedTo);
+            task.setAssignedTo(assignedTo.get());
             task.setTags(tags);
 
             taskService.update(task);

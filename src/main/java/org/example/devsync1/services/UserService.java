@@ -9,39 +9,63 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class UserService {
-    UserRepository userRepository;
+    private final UserRepository userRepository;
+
     public UserService() {
         this.userRepository = new UserRepository();
     }
-    public void save(User user) {
-       userRepository.save(user);
+
+    public User save(User user) throws Exception {
+        if (user == null) {
+            throw new IllegalArgumentException("User cannot be null.");
+        }
+
+        Optional<User> optionalUser = userRepository.findById(user.getId());
+        if (optionalUser.isPresent()) {
+            throw new IllegalArgumentException("User with ID " + user.getId() + " already exists.");
+        }
+        return userRepository.save(user);
     }
-    public User findById(long id) {
+
+    public Optional<User> findById(long id) {
         return userRepository.findById(id);
     }
+
     public List<User> findAll() {
-        return userRepository.findAll()
-                .stream()
-                .filter(user -> user.getRole().equals(Role.USER))
-                .collect(Collectors.toList());
+        return userRepository.findAll().stream().filter(u -> u.getRole() == Role.USER).collect(Collectors.toList());
     }
-    public User findByEmail(String email) {
+
+    public Optional<User> findByEmail(String email) {
+        if (email == null || email.isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be null or empty.");
+        }
         return userRepository.findByEmail(email);
     }
-    public void update(User user) {
-        User userfound = this.findById(user.getId());
-        if (userfound != null) {
-            userRepository.delete(user);
-        }else {
-            System.out.println("User not found");
+
+    public User update(User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("User cannot be null.");
+        }
+
+        Optional<User> optionalUser = userRepository.findById(user.getId());
+        if (optionalUser.isPresent()) {
+            return userRepository.update(user);
+        } else {
+            throw new IllegalArgumentException("User with ID " + user.getId() + " not found.");
         }
     }
-    public void delete(User user) {
-        User userfound = this.findById(user.getId());
-        if (userfound != null) {
-            userRepository.delete(user);
-        }else {
-            System.out.println("User not found");
+
+    public boolean delete(User user) {
+        if (user==null) {
+            throw new IllegalArgumentException("User cannot be null.");
         }
+
+        Optional<User> optionalUser = userRepository.findById(user.getId());
+        if (optionalUser.isPresent()) {
+            return userRepository.delete(user);
+        } else {
+            throw new IllegalArgumentException("User with ID " + user.getId() + " not found.");
+        }
+
     }
 }
