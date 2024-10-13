@@ -12,6 +12,7 @@ import org.mindrot.jbcrypt.BCrypt;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @WebServlet(name = "UserServlet", urlPatterns = {"/users"})
 public class UserServlet extends HttpServlet {
@@ -34,14 +35,8 @@ public class UserServlet extends HttpServlet {
                 case "update":
                     updateUser(req);
                     break;
-                case "delete":
-                    deleteUser(req,res);
-                    break;
                 case "login":
-                    loginUser(req, res);  // Handle login here
-                    return;
-                case "logout":
-                    logoutUser(req, res);  // Handle login here
+                    loginUser(req, res);
                     return;
                 default:
                     res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid action specified.");
@@ -54,7 +49,7 @@ public class UserServlet extends HttpServlet {
         }
     }
 
-    private void addUser(HttpServletRequest req) {
+    private void addUser(HttpServletRequest req) throws Exception {
         String username = req.getParameter("username");
         String firstName = req.getParameter("firstName");
         String lastName = req.getParameter("lastName");
@@ -83,24 +78,24 @@ public class UserServlet extends HttpServlet {
     }
     private void deleteUser(HttpServletRequest req , HttpServletResponse res) throws IOException {
         Long userId = Long.valueOf(req.getParameter("id"));
-        User user = userService.findById(userId);
-        userService.delete(user);
+        Optional<User> user = userService.findById(userId);
+        userService.delete(user.get());
         res.sendRedirect(req.getContextPath() + "/users");
     }
     private void loginUser(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
         String email = req.getParameter("email");
         String password = req.getParameter("password");
-        User user = userService.findByEmail(email);
+        Optional<User> user = userService.findByEmail(email);
 
         if (user == null) {
             req.setAttribute("error", "User not found with this email");
             req.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(req, res);
             return;
         }
-        if (BCrypt.checkpw(password, user.getPassword())) {
+        if (BCrypt.checkpw(password, user.get().getPassword())) {
             req.getSession().setAttribute("loggedUser", user);
 
-            if (user.getRole() == Role.MANAGER) {
+            if (user.get().getRole() == Role.MANAGER) {
                 req.getSession().setAttribute("user", user);
                 res.sendRedirect(req.getContextPath() + "/users");
             } else {
@@ -125,7 +120,8 @@ public class UserServlet extends HttpServlet {
                 req.getRequestDispatcher("/WEB-INF/views/user/createUser.jsp").forward(req, res);
             } else if ("edit".equals(action)) {
                 Long userId = Long.valueOf(req.getParameter("id"));
-                User user = userService.findById(userId);
+                Optional<User> user1 = userService.findById(userId);
+                User user = user1.get();
                 req.setAttribute("user", user);
                 req.getRequestDispatcher("/WEB-INF/views/user/editUser.jsp").forward(req, res);
 
