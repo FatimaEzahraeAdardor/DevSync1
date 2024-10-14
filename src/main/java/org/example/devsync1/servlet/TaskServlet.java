@@ -5,13 +5,14 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.example.devsync1.entities.Tag;
-import org.example.devsync1.entities.Task;
-import org.example.devsync1.entities.User;
+import org.example.devsync1.entities.*;
+import org.example.devsync1.enums.RequestStatus;
 import org.example.devsync1.enums.Role;
+import org.example.devsync1.repositories.implementations.RequestRepository;
 import org.example.devsync1.scheduler.TaskStatusScheduler;
 import org.example.devsync1.services.TagService;
 import org.example.devsync1.services.TaskService;
+import org.example.devsync1.services.TokenService;
 import org.example.devsync1.services.UserService;
 
 import java.io.IOException;
@@ -27,6 +28,8 @@ public class TaskServlet extends HttpServlet {
     private UserService userService;
     private TagService tagService;
     private TaskStatusScheduler taskStatusScheduler;
+    private RequestRepository requestRepository = new RequestRepository();
+    private TokenService tokenService;
     @Override
     public void init() throws ServletException {
         taskService = new TaskService();
@@ -34,6 +37,7 @@ public class TaskServlet extends HttpServlet {
         tagService = new TagService();
         taskStatusScheduler = new TaskStatusScheduler();
         taskStatusScheduler.startScheduler();
+        tokenService = new TokenService();
     }
 
     @Override
@@ -54,15 +58,23 @@ public class TaskServlet extends HttpServlet {
                 createPage(req, resp);
                 req.getRequestDispatcher("/WEB-INF/views/task/editTask.jsp").forward(req, resp);
             } else {
+                List<Task> tasks;
                 if (loggedUser.getRole().equals(Role.USER)) {
-                    List<Task> tasks = taskService.findByUserId(loggedUser.getId());
-                    req.setAttribute("tasks", tasks);
-                    req.getRequestDispatcher("/WEB-INF/views/user/userInformation.jsp").forward(req, resp);
+                    tasks = taskService.findByUserId(loggedUser.getId());
+                    req.setAttribute("loggedUser", loggedUser);
                 } else {
-                    List<Task> tasks = taskService.findAll();
-                    req.setAttribute("tasks", tasks);
-                    req.getRequestDispatcher("/WEB-INF/views/task/tasks.jsp").forward(req, resp);
+                    tasks = taskService.findAll();
                 }
+
+                // Fetch pending modification requests for each task
+                List<Request> pendingRequests = new ArrayList<>();
+                for (Task task : tasks) {
+                    Optional<Request> requestOptional = requestRepository.findByTaskId(task.getId());
+                    requestOptional.ifPresent(pendingRequests::add);
+                }
+                req.setAttribute("pendingRequests", pendingRequests);
+                req.setAttribute("tasks", tasks);
+                req.getRequestDispatcher(loggedUser.getRole().equals(Role.USER) ? "/WEB-INF/views/user/userInformation.jsp" : "/WEB-INF/views/task/tasks.jsp").forward(req, resp);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -80,8 +92,68 @@ public class TaskServlet extends HttpServlet {
             updateTask(req, resp);
         } else if ("updateStatus".equals(action)) {
             updateStatus(req, resp);
+        } else if ("requestModification".equals(action)){
+            saveRequest(req, resp);
+        }else if ("acceptRequest".equals(action)) {
+        acceptRequest(req, resp);
+    } else if ("rejectRequest".equals(action)) {
+        rejectRequest(req, resp);
+    }
+    }
+    private void acceptRequest(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        try {
+            String requestIdParam = req.getParameter("requestId");
+            if (requestIdParam == null) {
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Request ID is required.");
+                return;
+            }
+
+            Long requestId = Long.parseLong(requestIdParam);
+            Optional<Request> requestOptional = requestRepository.findById(requestId);
+            if (requestOptional.isPresent()) {
+                Request request = requestOptional.get();
+                request.setStatus(RequestStatus.ACCEPTED);
+                Optional<Token> token = tokenService.findByUserId(request.getUser().getId());
+                token.ifPresent(token1 -> {
+                    token1.setModifyTokenCount(token.get().getModifyTokenCount() - 1);
+                    tokenService.update(token1);
+                    requestRepository.update(request);
+                });
+
+                resp.sendRedirect(req.getContextPath() + "/tasks");
+            } else {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Request not found.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred while accepting the request: " + e.getMessage());
         }
     }
+
+    private void rejectRequest(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        try {
+            String requestIdParam = req.getParameter("requestId");
+            if (requestIdParam == null) {
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Request ID is required.");
+                return;
+            }
+            Long requestId = Long.parseLong(requestIdParam);
+            Optional<Request> requestOptional = requestRepository.findById(requestId);
+            if (requestOptional.isPresent()) {
+                Request request = requestOptional.get();
+                request.setStatus(RequestStatus.REJECTED);
+                    requestRepository.update(request);
+                resp.sendRedirect(req.getContextPath() + "/tasks");
+            } else {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Request not found.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred while rejecting the request: " + e.getMessage());
+        }
+    }
+
+
     private void updateStatus(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             Long taskId = Long.parseLong(req.getParameter("task_id"));
@@ -235,5 +307,14 @@ public class TaskServlet extends HttpServlet {
             req.setAttribute("error", "An error occurred while updating the task: " + e.getMessage());
             req.getRequestDispatcher("/WEB-INF/views/task/editTask.jsp").forward(req, resp);
         }
+    }
+    private void saveRequest(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        Request tokenRequest = new Request();
+        tokenRequest.setTask(taskService.findById(Long.parseLong(req.getParameter("taskId"))));
+        Optional<User> userOptional = userService.findById(Long.parseLong(req.getParameter("user_id")));
+        userOptional.ifPresent(tokenRequest::setUser);
+        tokenRequest.setStatus(RequestStatus.PENDING);
+        requestRepository.save(tokenRequest);
+        req.getSession().setAttribute("tokenRequest", tokenRequest);
     }
 }
