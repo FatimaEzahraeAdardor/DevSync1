@@ -16,15 +16,15 @@
 
 <!-- Main Content -->
 <div class="min-h-screen py-6 flex flex-col justify-center sm:py-12">
-    <div class="relative py-3 sm:max-w-3xl sm:mx-auto"> <!-- Changed max-w-xl to max-w-3xl -->
+    <div class="relative py-3 sm:max-w-3xl sm:mx-auto">
         <div class="absolute inset-0 bg-gradient-to-r from-blue-300 to-blue-600 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl"></div>
-        <div class="relative px-6 py-12 bg-white shadow-lg sm:rounded-3xl sm:p-20"> <!-- Increased padding -->
-            <h1 class="text-3xl font-semibold text-center">Edit Account</h1> <!-- Increased font size -->
+        <div class="relative px-6 py-12 bg-white shadow-lg sm:rounded-3xl sm:p-20">
+            <h1 class="text-3xl font-semibold text-center">Edit Account</h1>
             <form action="users" method="post">
                 <input type="hidden" name="action" value="update"/>
                 <input type="hidden" name="id" value="<%= ((User) request.getAttribute("user")).getId() %>"/>
                 <div class="divide-y divide-gray-200">
-                    <div class="py-10 text-base leading-7 space-y-6 text-gray-700 sm:text-lg sm:leading-8"> <!-- Increased padding and line height -->
+                    <div class="py-10 text-base leading-7 space-y-6 text-gray-700 sm:text-lg sm:leading-8">
                         <div class="relative">
                             <input autocomplete="off" id="username" name="username" type="text" value="<%= ((User) request.getAttribute("user")).getUsername() %>"
                                    class="peer placeholder-transparent h-12 w-full border-b-2 border-gray-300 text-gray-900

@@ -1,25 +1,25 @@
 package org.example.devsync1.repositories.implementations;
 
-import jakarta.persistence.*;
-import org.example.devsync1.entities.User;
-import org.example.devsync1.repositories.interfaces.UserInterface;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
+import org.example.devsync1.entities.Token;
+import org.example.devsync1.repositories.interfaces.TokenInterface;
 
 import java.util.List;
 import java.util.Optional;
 
-public class UserRepository implements UserInterface {
+public class TokenRepository implements TokenInterface {
     private final EntityManagerFactory entityManagerFactory;
-
-    public UserRepository() {
+    public TokenRepository() {
         this.entityManagerFactory = Persistence.createEntityManagerFactory("myJPAUnit");
     }
-
     @Override
-    public User save(User user) {
+    public Token save(Token token) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         try {
             entityManager.getTransaction().begin();
-            entityManager.persist(user);
+            entityManager.persist(token);
             entityManager.getTransaction().commit();
         } catch (Exception e) {
             if (entityManager.getTransaction().isActive()) {
@@ -29,14 +29,14 @@ public class UserRepository implements UserInterface {
         } finally {
             entityManager.close();
         }
-        return user;
+        return token;
     }
 
     @Override
-    public Optional<User> findById(Long id) {
+    public Optional<Token> findById(Long id) {
         try (EntityManager entityManager = entityManagerFactory.createEntityManager()) {
-            User user = entityManager.find(User.class, id);
-            return Optional.ofNullable(user);
+            Token token = entityManager.find(Token.class, id);
+            return Optional.ofNullable(token);
         } catch (Exception e) {
             System.err.println(e.getMessage());
             return Optional.empty();
@@ -44,42 +44,35 @@ public class UserRepository implements UserInterface {
     }
 
     @Override
-    public List<User> findAll() {
+    public List<Token> findAll() {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         try {
-            return entityManager.createQuery("SELECT u FROM User u", User.class).getResultList();
+            return entityManager.createQuery("SELECT t FROM Token t", Token.class).getResultList();
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return null;
         }
     }
-
     @Override
-    public Optional<User> findByEmail(String email) {
+    public List<Token> findTokenByUserId(Long userId) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         try {
-            TypedQuery<User> query = entityManager.createQuery("SELECT u FROM User u WHERE u.email = :email", User.class);
-            query.setParameter("email", email);
-            return Optional.of(query.getSingleResult());
-        } catch (NoResultException e) {
-            return Optional.empty();
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-            return Optional.empty();
+            return entityManager.createQuery("SELECT t FROM Token t WHERE t.user.id = :userId", Token.class)
+                    .setParameter("userId", userId)
+                    .getResultList();
         } finally {
             entityManager.close();
         }
     }
-
     @Override
-    public User update(User user) {
+    public Token update(Token token) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
 
         try {
             entityManager.getTransaction().begin();
-            User updatedUser = entityManager.merge(user);
+            Token updatedToken = entityManager.merge(token);
             entityManager.getTransaction().commit();
-            return updatedUser;
+            return updatedToken;
         } catch (Exception e) {
             if (entityManager.getTransaction().isActive()) {
                 entityManager.getTransaction().rollback();
@@ -92,14 +85,14 @@ public class UserRepository implements UserInterface {
     }
 
     @Override
-    public Boolean delete(User user) {
+    public Boolean delete(Token token) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         try {
             entityManager.getTransaction().begin();
-            if (entityManager.contains(user)) {
-                entityManager.remove(user);
+            if (entityManager.contains(token)) {
+                entityManager.remove(token);
             } else {
-                entityManager.remove(entityManager.merge(user));
+                entityManager.remove(entityManager.merge(token));
             }
             entityManager.getTransaction().commit();
             return true;
@@ -113,6 +106,17 @@ public class UserRepository implements UserInterface {
             entityManager.close();
         }
     }
+    @Override
+    public Optional<Token> findByUserId(Long id) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
 
+        List<Token> tokens = entityManager.createQuery("SELECT t FROM Token t WHERE t.user.id = :id", Token.class)
+                .setParameter("id", id)
+                .getResultList();
+        entityManager.getTransaction().commit();
+        entityManager.close();
 
+        return Optional.of(tokens.get(0));
+    }
 }
