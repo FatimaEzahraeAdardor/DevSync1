@@ -87,11 +87,35 @@
                                 task.getTags().stream().map(Object::toString).collect(Collectors.joining(", ")) :
                                 "N/A" %>
                     </td>
+
                     <td class="p-3 px-5"><%= task.getUser().getUsername()!= null ? task.getUser().getUsername() : "N/A" %></td>
                     <td class="p-3 px-5"><%= task.getAssignedTo().getUsername()!= null ? task.getAssignedTo().getUsername() : "N/A" %></td>
                     <td class="p-3 px-5 flex space-x-2">
+                        <%
+                            User loggedUser = (User) request.getAttribute("loggedUser");
+                            if (loggedUser != null) {
+                                if (task.getUser() != null && task.getUser().getId().equals(loggedUser.getId())) {
+                        %>
                         <a href="tasks?action=edit&id=<%= task.getId() %>" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition duration-200">Edit</a>
                         <a href="tasks?action=delete&id=<%= task.getId() %>" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition duration-200">Delete</a>
+                        <%
+                        } else {
+                        %>
+                        <form action="tasks?action=requestModification" method="post">
+                            <input type="hidden" name="taskId" value="<%= task.getId() %>">
+                            <input type="hidden" name="user_id" value="<%= task.getAssignedTo().getId() %>">
+                            <button type="submit" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg">Request Modification</button>
+                        </form>
+                        <form action="tasks?action=requestDeletion" method="post">
+                            <input type="hidden" name="taskId" value="<%= task.getId() %>">
+                            <input type="hidden" name="user_id" value="<%= task.getAssignedTo().getId() %>">
+                            <button type="submit" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg">Request Deletion</button>
+                        </form>
+                        <%
+                                }
+                            }
+                        %>
+
                     </td>
                 </tr>
                 <%

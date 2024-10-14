@@ -5,6 +5,8 @@
         <class>org.example.devsync1.entities.User</class>
         <class>org.example.devsync1.entities.Task</class>
         <class>org.example.devsync1.entities.Tag</class>
+        <class>org.example.devsync1.entities.Token</class>
+        <class>org.example.devsync1.entities.Request</class>
         <properties>
             <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>
             <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/DevSync"/>
