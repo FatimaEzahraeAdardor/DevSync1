@@ -26,9 +26,7 @@ public class TaskStatusScheduler {
     public void startScheduler() {
         scheduler.scheduleAtFixedRate(this::checkAndUpdateTaskStatuses, 0, 1, TimeUnit.SECONDS);
     }
-    /**
-     * Checks all tasks and updates their status to "Canceled" if they are overdue and not completed.
-     */
+
     public void checkAndUpdateTaskStatuses() {
         List<Task> allTasks = taskService.findAll();
         LocalDate today = LocalDate.now();
