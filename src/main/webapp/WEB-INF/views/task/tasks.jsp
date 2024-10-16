@@ -102,8 +102,24 @@
                                 "N/A" %>
                     </td>
                     <td class="p-3 px-5"><%= task.getUser().getUsername() != null ? task.getUser().getUsername() : "N/A" %></td>
-                    <td class="p-3 px-5"><%= task.getAssignedTo().getUsername() != null ? task.getAssignedTo().getUsername() : "N/A" %></td>
-                    <td class="p-3 px-5 ">
+                    <!-- Assignedto Update Form -->
+                    <td class="p-3 px-5">
+                        <form action="tasks?action=assignedTo" method="post">
+                            <input type="hidden" name="task_id" value="<%= task.getId() %>">
+                            <select name="assignedTo" class="px-2 py-1 border rounded-lg" onchange="submitFormOnChange(this)">
+                                <%
+                                    List<User> users = (List<User>) request.getAttribute("users");
+                                    if (users != null) {
+                                        for (User user : users) {
+                                %>
+                                <option value="<%= user.getId() %>" <%= user.getId().equals(task.getAssignedTo().getId()) ? "selected" : "" %>><%= user.getUsername() %></option>
+                                <%
+                                        }
+                                    }
+                                %>
+                            </select>
+                        </form>
+                    </td>                    <td class="p-3 px-5 ">
                         <a href="tasks?action=edit&id=<%= task.getId() %>" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition duration-200">Edit</a>
                         <a href="tasks?action=delete&id=<%= task.getId() %>" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition duration-200">Delete</a>
                     </td>

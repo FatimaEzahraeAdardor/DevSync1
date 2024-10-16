@@ -27,7 +27,7 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<Task> tasks;
-    @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST)
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     private List<Token> tokens;
 
     public User(String username, String firstName, String lastName, String email, String password, Role role) {
