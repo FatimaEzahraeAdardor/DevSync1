@@ -21,12 +21,14 @@ public class Request {
     private Task task;
     @Enumerated(EnumType.STRING)
     private RequestStatus status;
-
+    private LocalDate creationDate;
 
     public Request(Task task,User user) {
         this.user = user;
         this.task = task;
         this.status = RequestStatus.PENDING;
+        this.creationDate = LocalDate.now();
+
     }
 
     public Request() {
