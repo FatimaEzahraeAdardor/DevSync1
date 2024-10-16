@@ -1,6 +1,7 @@
 package org.example.devsync1.services;
 
 import org.example.devsync1.entities.Task;
+import org.example.devsync1.entities.User;
 import org.example.devsync1.enums.Role;
 import org.example.devsync1.repositories.implementations.TaskRepository;
 
@@ -35,7 +36,14 @@ public class TaskService {
         if (task != null) {
             task.setStatus(newStatus);
             this.update(task);
+        }
     }
+    public  void  updateAssignedTo(Long taskId, User assignedTo){
+        Task task = this.findById(taskId);
+        if (task != null) {
+            task.setAssignedTo(assignedTo);
+            this.update(task);
+        }
 }
     public void delete(Task task) {
         taskRepository.delete(task);

@@ -8,9 +8,8 @@ import java.util.Optional;
 
 public interface RequestInterface {
      Request save(Request request);
-      void update(Request request);
+      Request update(Request request);
      Optional<Request> findById(Long id) ;
-      void updateStatus(Long id, RequestStatus status);
     Optional<Request> findByTaskId(Long taskId);
      List<Request> findByUserId(Long userId);
 }

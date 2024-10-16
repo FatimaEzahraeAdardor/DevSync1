@@ -36,8 +36,9 @@ public class Task {
     private String status;
     private LocalDate creationDate;
     private LocalDate dueDate;
+    private Boolean isChanged;
 
-    public Task(String title, String description, LocalDate creationDate, LocalDate dueDate, String status, List<Tag> tags, User user, User assignedTo) {
+    public Task(String title, String description, LocalDate creationDate, LocalDate dueDate, String status, List<Tag> tags, User user, User assignedTo,  boolean isChanged) {
         this.title = title;
         this.description = description;
         this.creationDate = creationDate;
@@ -46,6 +47,7 @@ public class Task {
         this.tags = tags;
         this.user = user;
         this.assignedTo = assignedTo;
+        this.isChanged = isChanged;
     }
 
     public Task() {

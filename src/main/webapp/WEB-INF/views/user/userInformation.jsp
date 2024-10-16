@@ -50,6 +50,17 @@
             <a href="tasks?action=create" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5">Add Task</a>
         </div>
 
+        <!-- Error message display -->
+        <%
+            String error = (String) request.getAttribute("error");
+            if (error != null) {
+        %>
+        <div class="mb-4 p-4 text-red-700 bg-red-200 rounded-lg shadow-md">
+            <strong>Error:</strong> <%= error %>
+        </div>
+        <%
+            }
+        %>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <!-- Example Card for Users -->
             <div class="bg-white p-4 rounded-lg shadow">
@@ -106,11 +117,7 @@
                             <input type="hidden" name="user_id" value="<%= task.getAssignedTo().getId() %>">
                             <button type="submit" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg">Request Modification</button>
                         </form>
-                        <form action="tasks?action=requestDeletion" method="post">
-                            <input type="hidden" name="taskId" value="<%= task.getId() %>">
-                            <input type="hidden" name="user_id" value="<%= task.getAssignedTo().getId() %>">
-                            <button type="submit" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg">Request Deletion</button>
-                        </form>
+                        <a href="tasks?action=deleteFromUser&id=<%= task.getId() %>" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition duration-200">Delete</a>
                         <%
                                 }
                             }
