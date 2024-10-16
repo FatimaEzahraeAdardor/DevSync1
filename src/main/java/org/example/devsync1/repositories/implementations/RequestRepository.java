@@ -34,17 +34,18 @@ public class RequestRepository implements RequestInterface {
     }
 
     @Override
-    public void update(Request request) {
+    public Request update(Request request) {
         EntityManager em = entityManagerFactory.createEntityManager();
         try {
             em.getTransaction().begin();
             em.merge(request);
             em.getTransaction().commit();
+            return request;
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
             }
-            throw e; // rethrow to handle the exception in the service layer if needed
+            throw e;
         } finally {
             em.close();
         }
@@ -60,30 +61,6 @@ public class RequestRepository implements RequestInterface {
         }
     }
 
-    @Override
-    public void updateStatus(Long id, RequestStatus status) {
-        EntityManager em = entityManagerFactory.createEntityManager();
-        try {
-            em.getTransaction().begin();
-            Request request = em.find(Request.class, id);
-            request.setStatus(status);
-            em.merge(request);
-
-            if (status == RequestStatus.ACCEPTED) {
-                Token token = em.find(Token.class, request.getUser().getId());
-                token.setModifyTokenCount(token.getModifyTokenCount() - 1);
-                em.merge(token);
-            }
-            em.getTransaction().commit();
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw e;
-        } finally {
-            em.close();
-        }
-    }
     // New method to find a request by task ID
     @Override
     public Optional<Request> findByTaskId(Long taskId) {
@@ -93,12 +70,12 @@ public class RequestRepository implements RequestInterface {
             query.setParameter("taskId", taskId);
             return Optional.ofNullable(query.getSingleResult());
         } catch (Exception e) {
-            return Optional.empty(); // Return empty if no result or if there's an error
+            return Optional.empty();
         } finally {
             em.close();
         }
     }
-
+@Override
     public List<Request> findByUserId(Long userId) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         try {
