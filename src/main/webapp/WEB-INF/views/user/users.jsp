@@ -43,7 +43,7 @@
             <!-- Example Card for Users -->
             <div class="bg-white p-4 rounded-lg shadow">
                 <h2 class="font-bold text-xl mb-2">Total Users</h2>
-                <p class="text-3xl"><%= users != null ? users.size() : 0 %></p>
+                <p class="text-3xl"><%= users != null ? users.stream().count() : 0 %></p>
             </div>
         </div>
 

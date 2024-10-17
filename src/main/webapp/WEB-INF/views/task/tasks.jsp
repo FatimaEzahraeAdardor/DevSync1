@@ -50,11 +50,23 @@
             <a href="tasks?action=create" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5">Add Task</a>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <!-- Total Tasks Card -->
             <div class="bg-white p-4 rounded-lg shadow">
                 <h2 class="font-bold text-xl mb-2">Total Tasks</h2>
-                <p class="text-3xl"><%= tasks != null ? tasks.size() : 0 %></p>
+                <p class="text-3xl"><%= tasks != null ? tasks.stream().count() : 0 %></p>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow">
+                <h2 class="font-bold text-xl mb-2">Completed Tasks </h2>
+                <p class="text-3xl"><%= tasks != null ? tasks.stream().filter(task -> task.getStatus().equals("Completed")).count() : 0 %></p>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow">
+                <h2 class="font-bold text-xl mb-2">In Progress Tasks Tasks</h2>
+                <p class="text-3xl"><%= tasks != null ? tasks.stream().filter(task -> task.getStatus().equals("In Progress")).count(): 0 %></p>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow">
+                <h2 class="font-bold text-xl mb-2">Canceled Tasks</h2>
+                <p class="text-3xl"><%= tasks != null ? tasks.stream().filter(task -> task.getStatus().equals("In Progress")).count() : 0 %></p>
             </div>
         </div>
 
