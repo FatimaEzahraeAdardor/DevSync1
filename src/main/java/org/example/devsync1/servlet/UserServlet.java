@@ -7,6 +7,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.example.devsync1.entities.User;
 import org.example.devsync1.enums.Role;
+import org.example.devsync1.scheduler.TokenDeleteScheduler;
+import org.example.devsync1.scheduler.TokenModifyScheduler;
 import org.example.devsync1.services.UserService;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -18,10 +20,16 @@ import java.util.Optional;
 public class UserServlet extends HttpServlet {
 
     private UserService userService;
+    private TokenModifyScheduler tokenModifyScheduler;
+    private TokenDeleteScheduler tokenDeleteScheduler;
 
     @Override
     public void init() throws ServletException {
         userService = new UserService();
+        tokenModifyScheduler = new TokenModifyScheduler();
+        tokenDeleteScheduler = new TokenDeleteScheduler();
+        tokenModifyScheduler.startScheduler();
+        tokenDeleteScheduler.startScheduler();
     }
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException {

@@ -36,7 +36,6 @@ public class TokenModifyScheduler {
                 boolean hasOldPendingRequests = requests.stream()
                         .filter(request -> request.getStatus() == RequestStatus.PENDING)
                         .anyMatch(request -> Duration.between(request.getCreationDate(), LocalDateTime.now()).toHours() >= 12);
-
                 if (hasOldPendingRequests) {
                     token.setModifyTokenCount(token.getModifyTokenCount() * 2);
                     System.out.println("Doubling modifyTokenCount for user: " + token.getUser().getId() + " due to pending requests for over 12 hours.");
@@ -51,7 +50,6 @@ public class TokenModifyScheduler {
             e.printStackTrace();
         }
     }
-
     public void stopScheduler() {
         scheduler.shutdown();
     }
