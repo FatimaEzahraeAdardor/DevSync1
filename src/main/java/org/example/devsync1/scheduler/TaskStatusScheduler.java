@@ -24,7 +24,7 @@ public class TaskStatusScheduler {
     }
 
     public void startScheduler() {
-        scheduler.scheduleAtFixedRate(this::checkAndUpdateTaskStatuses, 0, 1, TimeUnit.SECONDS);
+            scheduler.scheduleAtFixedRate(this::checkAndUpdateTaskStatuses, 0, 1, TimeUnit.DAYS);
     }
 
     public void checkAndUpdateTaskStatuses() {
