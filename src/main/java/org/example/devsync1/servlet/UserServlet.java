@@ -7,8 +7,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.example.devsync1.entities.User;
 import org.example.devsync1.enums.Role;
+import org.example.devsync1.repositories.implementations.UserRepository;
 import org.example.devsync1.scheduler.TokenDeleteScheduler;
 import org.example.devsync1.scheduler.TokenModifyScheduler;
+import org.example.devsync1.services.TokenService;
 import org.example.devsync1.services.UserService;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -25,7 +27,7 @@ public class UserServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        userService = new UserService();
+        userService = new UserService(new UserRepository(), new TokenService());
         tokenModifyScheduler = new TokenModifyScheduler();
         tokenDeleteScheduler = new TokenDeleteScheduler();
         tokenModifyScheduler.startScheduler();
@@ -62,10 +64,11 @@ public class UserServlet extends HttpServlet {
         String lastName = req.getParameter("lastName");
         String email = req.getParameter("email");
         String password = req.getParameter("password");
-        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
         String roleStr = req.getParameter("role");
         Role role = Role.valueOf(roleStr.toUpperCase());
-        User user = new User(username, firstName, lastName, email, hashedPassword, role);
+
+        User user = new User(username, firstName, lastName, email, password, role);
+
         userService.save(user);
     }
 
@@ -77,7 +80,6 @@ public class UserServlet extends HttpServlet {
         String lastName = req.getParameter("lastName");
         String email = req.getParameter("email");
         String password = req.getParameter("password");
-        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
         String roleStr = req.getParameter("role");
         Role role = Role.valueOf(roleStr.toUpperCase());
         user.get().setId(userId);
@@ -85,7 +87,7 @@ public class UserServlet extends HttpServlet {
         user.get().setFirstName(firstName);
         user.get().setLastName(lastName);
         user.get().setEmail(email);
-        user.get().setPassword(hashedPassword);
+        user.get().setPassword(password);
         user.get().setRole(role);
         userService.update(user.get());
     }

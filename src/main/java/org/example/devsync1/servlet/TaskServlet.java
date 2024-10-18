@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.example.devsync1.entities.*;
 import org.example.devsync1.enums.RequestStatus;
 import org.example.devsync1.enums.Role;
+import org.example.devsync1.repositories.implementations.UserRepository;
 import org.example.devsync1.scheduler.TaskStatusScheduler;
 import org.example.devsync1.services.*;
 
@@ -30,7 +31,7 @@ public class TaskServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         taskService = new TaskService();
-        userService = new UserService();
+        userService = new UserService(new UserRepository(),new TokenService());
         tagService = new TagService();
         taskStatusScheduler = new TaskStatusScheduler();
         taskStatusScheduler.startScheduler();
